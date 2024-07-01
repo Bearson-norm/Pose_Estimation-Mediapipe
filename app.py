@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# adding required library
 import csv
 import copy
 import argparse
 import itertools
 import math
-import json
 import time
 
 from collections import Counter
@@ -20,7 +20,7 @@ from utils import CvFpsCalc
 from model import KeyPointClassifier
 from model import PointHistoryClassifier
 
-# Setting broker dan topik
+# Establishing mqtt broker dan topic #######################################################
 broker_address = "dimasalifta.tech"
 topic = "thumb"
 topic1 = "index"
@@ -28,15 +28,16 @@ topic2 = "middle"
 topic3 = "ring"
 topic4 = "little"
 
+# Assigning the length interval data sent to sent directly #####################################
 topics = [(topic, 0), (topic1, 0), (topic2, 0), (topic3, 0), (topic4, 0)]
 
 def get_args():
     parser = argparse.ArgumentParser()
-
+    # Assigning camera with window size
     parser.add_argument("--device", type=int, default=0)
     parser.add_argument("--width", help='cap width', type=int, default=960)
     parser.add_argument("--height", help='cap height', type=int, default=540)
-
+    # Set minimum detection and tracking confidence to be shown
     parser.add_argument('--use_static_image_mode', action='store_true')
     parser.add_argument("--min_detection_confidence",
                         help='min_detection_confidence',
@@ -46,11 +47,8 @@ def get_args():
                         help='min_tracking_confidence',
                         type=int,
                         default=0.5)
-
     args = parser.parse_args()
-
     return args
-
 
 def main():
     # Argument parsing #################################################################
@@ -81,7 +79,6 @@ def main():
     )
 
     keypoint_classifier = KeyPointClassifier()
-
     point_history_classifier = PointHistoryClassifier()
 
     # Read labels ###########################################################
@@ -189,30 +186,14 @@ def main():
                 Pos3 = np.interp(length3, [0, 1], [0, 100]) # jari manis
                 Pos4 = np.interp(length4, [0, 1], [0, 100]) # jari kelingking
 
+                # 
                 Posgripper= (round(Pos)) # ibu jari
                 Posgripper1= (round(Pos1)) # telunjuk
                 Posgripper2= (round(Pos2)) # jari tengah
                 Posgripper3= (round(Pos3)) # jari manis
                 Posgripper4= (round(Pos4)) # jari kelingking
 
-                # print(Posgripper, Posgripper1, Posgripper2, Posgripper3, Posgripper4)
-
-                # def read_sensor_data(Posgripper,Posgripper1,Posgripper2,Posgripper3,Posgripper4):
-                # n1,n2,n3,n4,n5 = copy.deepcopy(Posgripper,Posgripper1,Posgripper2,Posgripper3,Posgripper4)
-                # Kemas data sensor ke dalam dictionary
-                # data = {
-                #     "Thumb": Posgripper,
-                #     "Index": Posgripper1,
-                #     "Middle": Posgripper2,
-                #     "Ring": Posgripper3,
-                #     "Little": Posgripper4,
-                #     }
-
-                # # Ubah data menjadi format JSON
-                # payload = json.dumps(data)
-                # print(data)
-
-                
+                # print(Posgripper, Posgripper1, Posgripper2, Posgripper3, Posgripper4)                
 
                 pre_processed_point_history_list = pre_process_point_history(
                     debug_image, point_history)
@@ -286,7 +267,7 @@ def main():
                 client.publish(topic4, Posgripper4)
 
                 # Blocking call that processes network traffic, dispatches callbacks and handles reconnecting.
-                client.loop_forever()
+                # client.loop_forever()
                 
         else:
             point_history.append([0, 0])
@@ -306,30 +287,6 @@ def main():
                 print("Subscribed to topics:", [t[0] for t in topics])
             else:
                 print("Connect failed with code", rc)
-
-        # # The callback for when a PUBLISH message is received from the server.
-        # def on_message(client, userdata, msg):
-        #     print(f"Message received on topic {msg.topic}: {str(msg.payload.decode('utf-8'))}")
-
-        # # Creating the client instance
-        # client = mqtt.Client(client_id="", clean_session=True, userdata=None, protocol=mqtt.MQTTv311, transport="tcp")
-
-        # # Assign the on_connect and on_message callbacks
-        # client.on_connect = on_connect
-        # client.on_message = on_message
-
-        # # Connect to the broker
-        # try:
-        #     client.connect(broker_address, 1883, 60)
-        # except Exception as e:
-        #     print(f"Failed to connect to broker: {e}")
-
-        # # Publishing to multiple topics
-        # client.publish(topic, Posgripper)
-        # client.publish(topic1, Posgripper1)
-        # client.publish(topic2, Posgripper2)
-        # client.publish(topic3, Posgripper3)
-        # client.publish(topic4, Posgripper4)
 
         # # Blocking call that processes network traffic, dispatches callbacks and handles reconnecting.
         # client.loop_forever()
@@ -705,41 +662,3 @@ def draw_info(image, fps, mode, number):
 
 if __name__ == '__main__':
     main()
-
-# # The callback for when the client receives a CONNACK response from the server.
-# def on_connect(client, userdata, flags, rc):
-#     if rc == 0:
-#         print("Connected successfully")
-#         # Subscribing to multiple topics
-#         for t in topics:
-#             client.subscribe(t)
-#         print("Subscribed to topics:", [t[0] for t in topics])
-#     else:
-#         print("Connect failed with code", rc)
-
-# # The callback for when a PUBLISH message is received from the server.
-# def on_message(client, userdata, msg):
-#     print(f"Message received on topic {msg.topic}: {str(msg.payload.decode('utf-8'))}")
-
-# # Creating the client instance
-# client = mqtt.Client(client_id="", clean_session=True, userdata=None, protocol=mqtt.MQTTv311, transport="tcp")
-
-# # Assign the on_connect and on_message callbacks
-# client.on_connect = on_connect
-# client.on_message = on_message
-
-# # Connect to the broker
-# try:
-#     client.connect(broker_address, 1883, 60)
-# except Exception as e:
-#     print(f"Failed to connect to broker: {e}")
-
-# # Publishing to multiple topics
-# client.publish(topic, main)
-# client.publish(topic1, Posgripper1)
-# client.publish(topic2, Posgripper2)
-# client.publish(topic3, Posgripper3)
-# client.publish(topic4, Posgripper4)
-
-# # Blocking call that processes network traffic, dispatches callbacks and handles reconnecting.
-# client.loop_forever()
