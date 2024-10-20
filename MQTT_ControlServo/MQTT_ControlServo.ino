@@ -2,7 +2,11 @@
 #include <Adafruit_PWMServoDriver.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
-#define NUM_TOPIC 5
+#define NUM_TOPIC 5 
+/* 
+1 = Ibu Jari, 2 = Jari Telunjuk, 3 = Jari Tengah
+4 = Jari Manis, 5 = Jari Kelingking
+*/
 
 // Define the number of servos and PCA9685 address
 #define NUM_SERVOS 5
@@ -19,8 +23,8 @@ const int servoMaxPulse = 600;
 
 Servo servos[NUM_SERVOS];
 
-// WiFiClient espClient;
-// PubSubClient client(espClient);
+ WiFiClient espClient;
+ PubSubClient client(espClient);
 
 void setup() {
   // connect_mqtt();
@@ -62,4 +66,3 @@ void loop() {
   }
   delay(15);  // Add a small delay to avoid overwhelming communication
 }
-

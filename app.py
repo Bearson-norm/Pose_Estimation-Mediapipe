@@ -20,7 +20,7 @@ from utils import CvFpsCalc
 from model import KeyPointClassifier
 from model import PointHistoryClassifier
 
-# Establishing mqtt broker dan topic #######################################################
+# Establishing mqtt broker dan topic
 broker_address = "dimasalifta.tech"
 topic = "thumb"
 topic1 = "index"
@@ -28,8 +28,10 @@ topic2 = "middle"
 topic3 = "ring"
 topic4 = "little"
 
-# Assigning the length interval data sent to sent directly #####################################
-topics = [(topic, 0), (topic1, 0), (topic2, 0), (topic3, 0), (topic4, 0)]
+# Assigning the length interval data sent to sent directly
+topics = [(topic, 0), (topic1, 0), 
+		  (topic2, 0), (topic3, 0), 
+		  (topic4, 0)]
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -51,7 +53,7 @@ def get_args():
     return args
 
 def main():
-    # Argument parsing #################################################################
+    # Argument parsing
     args = get_args()
 
     cap_device = args.device
@@ -64,12 +66,12 @@ def main():
 
     use_brect = True
 
-    # Camera preparation ###############################################################
+    # Camera preparation
     cap = cv.VideoCapture(cap_device)
     cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
 
-    # Model load #############################################################
+    # Model load
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(
         static_image_mode=use_static_image_mode,
@@ -81,7 +83,7 @@ def main():
     keypoint_classifier = KeyPointClassifier()
     point_history_classifier = PointHistoryClassifier()
 
-    # Read labels ###########################################################
+    # Read labels
     with open('model/keypoint_classifier/keypoint_classifier_label.csv',
               encoding='utf-8-sig') as f:
         keypoint_classifier_labels = csv.reader(f)
@@ -96,36 +98,36 @@ def main():
             row[0] for row in point_history_classifier_labels
         ]
 
-    # FPS Measurement ########################################################
+    # FPS Measurement
     cvFpsCalc = CvFpsCalc(buffer_len=10)
 
-    # Coordinate history #################################################################
+    # Coordinate history
     history_length = 16
     point_history = deque(maxlen=history_length)
 
-    # Finger gesture history ################################################
+    # Finger gesture history
     finger_gesture_history = deque(maxlen=history_length)
 
-    #  ########################################################################
+    #  ##################################################
     mode = 0
 
     while True:
         fps = cvFpsCalc.get()
 
-        # Process Key (ESC: end) #################################################
+        # Process Key (ESC: end)
         key = cv.waitKey(10)
         if key == 27:  # ESC
             break
         number, mode = select_mode(key, mode)
 
-        # Camera capture #####################################################
+        # Camera capture
         ret, image = cap.read()
         if not ret:
             break
         image = cv.flip(image, 1)  # Mirror display
         debug_image = copy.deepcopy(image)
 
-        # Detection implementation #############################################################
+        # Detection implementation
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
 
         image.flags.writeable = False
@@ -142,7 +144,7 @@ def main():
                 landmark_list = calc_landmark_list(debug_image, hand_landmarks)
 
                 # displaying keypoint position
-                # print (landmark_list[0])
+                print (landmark_list)
 
                 # Conversion to relative coordinates / normalized coordinates
                 pre_processed_landmark_list = pre_process_landmark(
@@ -247,7 +249,8 @@ def main():
                     print(f"Message received on topic {msg.topic}: {str(msg.payload.decode('utf-8'))}")
 
                 # Creating the client instance
-                client = mqtt.Client(client_id="", clean_session=True, userdata=None, protocol=mqtt.MQTTv311, transport="tcp")
+                client = mqtt.Client(client_id="", clean_session=True, userdata=None, 
+						 protocol=mqtt.MQTTv311, transport="tcp")
 
                 # Assign the on_connect and on_message callbacks
                 client.on_connect = on_connect
@@ -334,8 +337,8 @@ def calc_landmark_list(image, landmarks):
     for _, landmark in enumerate(landmarks.landmark):
         landmark_x = min(int(landmark.x * image_width), image_width - 1)
         landmark_y = min(int(landmark.y * image_height), image_height - 1)
+        
         # landmark_z = landmark.z
-
         landmark_point.append([landmark_x, landmark_y])
 
         # print(landmark_point)
