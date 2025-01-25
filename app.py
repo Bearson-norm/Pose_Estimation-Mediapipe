@@ -21,7 +21,7 @@ from model import KeyPointClassifier
 from model import PointHistoryClassifier
 
 # Establishing mqtt broker dan topic
-broker_address = "dimasalifta.tech"
+broker_address = "103.127.138.196"
 topic = "thumb"
 topic1 = "index"
 topic2 = "middle"
